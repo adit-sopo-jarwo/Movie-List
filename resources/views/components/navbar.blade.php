@@ -31,9 +31,9 @@
                     <form id="searchForm" action="{{ route('search') }}" method="GET">
                         <label for="searchInput" class="sr-only">Cari</label>
                         <div class="flex rounded-lg shadow-sm">
-                            <input type="text" id="searchInput" name="query" <!-- Mengubah id menjadi searchInput
-                                -->
-                            class="py-3 px-4 block w-full border-gray-200 shadow-sm rounded-s-lg text-sm focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600">
+                            <input type="text" id="searchInput" name="query"
+                                class="py-3 px-4 block w-full border-gray-200 shadow-sm rounded-s-lg text-sm focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+                                placeholder="Search">
                             <button type="submit"
                                 class="w-[2.875rem] h-[2.875rem] flex-shrink-0 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-e-md border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600">
                                 <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24"
@@ -46,6 +46,12 @@
                         </div>
                     </form>
                 </div>
+                @if (auth()->check())
+                    <a href="{{route('logout')}}" class="text-center text-md px-11 py-3 text-black bg-red-600 hover:bg-red-700 rounded-lg">Logout</a>
+                @else
+                    <a href="{{ route('login') }}"
+                        class="text-center text-md px-11 py-3 text-black bg-yellow-600 hover:bg-yellow-700 rounded-lg">Login</a>
+                @endif
             </div>
         </div>
     </nav>

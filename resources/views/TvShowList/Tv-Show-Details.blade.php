@@ -110,7 +110,7 @@
         </div>
 
         {{-- similar tv show --}}
-        @include('TvShowList/Tv-Show-Similar')
+        {{-- @include('TvShowList/Tv-Show-Similar') --}}
     </div>
 
     <!-- Trailer wrapper -->

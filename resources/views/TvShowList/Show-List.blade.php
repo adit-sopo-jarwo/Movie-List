@@ -26,7 +26,7 @@
                 }
             @endphp
 
-            <a href="MovieList/list/{{ $showId }}" class="group">
+            <a href="{{ route('Tv-Show-Details', ['id' => $showId]) }}" class="group">
                 <div
                     class="min-w-[232px] min-h-[428px] bg-white drop-shadow-[0_0px_8px_rgba(0,0,0,0.25)] group-hover:drop-shadow-[0_0px_8px_rgba(0,0,0,0.5)] rounded-[32px] p-5 flex flex-col md:mr-8 duration-100">
                     <div class="overflow-hidden rounded-[32px]">

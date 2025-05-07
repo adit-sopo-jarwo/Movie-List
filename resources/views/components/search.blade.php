@@ -36,111 +36,200 @@
         </div>
 
         <!-- Error Notification -->
-        <div id='notification'
+        <div id='notification' style='display: none;'
             class='min-w-[250px] p-4 bg-red-700 text-white text-center rounded-lg fixed z-index-10 top-0 right-0 mr-10 mt-5 drop-shadow-lg'>
             <span id='notificationMessage'></span>
         </div>
+
     </div>
 
     <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
         crossorigin="anonymous"></script>
 
     <script>
-        let baseURL = '<?php echo $baseURL; ?>';
-        let imageBaseURL = '<?php echo $imageBaseURL; ?>';
-        let apiKey = '<?php echo $apiKey; ?>';
-        let searchKeyword = '';
+        $(document).ready(function() {
+            let baseURL = '<?php echo $baseURL; ?>';
+            let imageBaseURL = '<?php echo $imageBaseURL; ?>';
+            let apiKey = '<?php echo $apiKey; ?>';
 
-        // Hide loader
-        $('#autoLoad').hide();
+            // Function to extract the search query parameter from the URL
+            function getSearchQueryFromURL() {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get('query') || '';
+            }
 
-        // Hide notification
-        $('#notification').hide();
-
-        // Get more data
-        function search() {
-            searchKeyword = $('#searchInput').val().trim();
-            if (searchKeyword) {
+            // Function to fetch movie genres
+            function fetchMovieGenres() {
                 $.ajax({
-                        url: `${baseURL}/search/multi?page=1&api_key=${apiKey}&query=${searchKeyword}`,
-                        type: 'get',
-                        beforeSend: function() {
-                            // Show loader
-                            $('#autoLoad').show();
-
-                            // Clear data
-                            $('#dataWrapper').html('');
+                    url: `${baseURL}/genre/movie/list?api_key=${apiKey}`,
+                    type: 'get',
+                    success: function(response) {
+                        if (response.genres) {
+                            // Menyimpan daftar genre film
+                            movieGenres = response.genres;
+                            // Panggil fungsi untuk mendapatkan daftar genre TV setelah mendapatkan daftar genre film
+                            fetchTVGenres();
                         }
-                    })
-                    .done(function(response) {
-                        // Hide loader
-                        $('#autoLoad').hide();
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        console.error('Error fetching movie genres:', errorThrown);
+                    }
+                });
+            }
 
-                        if (response.results) {
-                            var htmlData = [];
-                            response.results.forEach(item => {
-                                if (item.media_type == 'movie' || item.media_type == 'tv') {
-                                    let searchTitle = '';
-                                    let originalDate = '';
-                                    let detailsURL = '';
+            // Function to fetch TV genres
+            function fetchTVGenres() {
+                $.ajax({
+                    url: `${baseURL}/genre/tv/list?api_key=${apiKey}`,
+                    type: 'get',
+                    success: function(response) {
+                        if (response.genres) {
+                            // Menyimpan daftar genre TV
+                            tvGenres = response.genres;
+                            // Memanggil fungsi untuk memuat data film dan acara TV setelah mendapatkan daftar genre TV
+                            search();
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        console.error('Error fetching TV genres:', errorThrown);
+                    }
+                });
+            }
 
-                                    if (item.media_type == 'movie') {
-                                        detailsURL = `/movie/${item.id}`;
-                                        original_date = item.release_date;
-                                        searchTitle = item.title;
-                                    } else {
-                                        detailsURL = `/tv/${item.id}`;
-                                        original_date = item.first_air_date;
-                                        searchTitle = item.name;
-                                    }
+            // Panggil fungsi untuk mendapatkan daftar genre film saat halaman dimuat
+            fetchMovieGenres();
 
-                                    let date = new Date(original_date);
+            // Variabel untuk menyimpan daftar genre film dan TV
+            let movieGenres = [];
+            let tvGenres = [];
 
-                                    let searchYear = date.getFullYear();
-                                    let searchImage = item.poster_path ?
-                                        `${imageBaseURL}/w500${item.poster_path}` :
-                                        'https://via.placeholder.com/300x400';
-                                    let searchRating = item.vote_average * 10;
+            // Hide loader
+            $('#autoLoad').hide();
 
-                                    htmlData.push(`
+            // Hide notification
+            $('#notification').hide();
+
+            // Get search query from URL
+            let searchKeyword = getSearchQueryFromURL();
+
+            // Pre-fill search input with the search query
+            $('#searchInput').val(searchKeyword);
+
+            // Perform search when the page loads if there's a search query in the URL
+            if (searchKeyword) {
+                search();
+            }
+
+            // Get more data
+            function search() {
+                searchKeyword = $('#searchInput').val().trim();
+                if (searchKeyword) {
+                    $.ajax({
+                            url: `${baseURL}/search/multi?page=1&api_key=${apiKey}&query=${searchKeyword}`,
+                            type: 'get',
+                            beforeSend: function() {
+                                // Show loader
+                                $('#autoLoad').show();
+
+                                // Clear data
+                                $('#dataWrapper').html('');
+                            }
+                        })
+                        .done(function(response) {
+                            // Hide loader
+                            $('#autoLoad').hide();
+
+                            if (response.results) {
+                                var htmlData = [];
+                                response.results.forEach(item => {
+                                    if (item.media_type == 'movie' || item.media_type == 'tv') {
+                                        let searchTitle = '';
+                                        let originalDate = '';
+                                        let detailsURL = '';
+
+                                        if (item.media_type == 'movie') {
+                                            detailsURL = `/movie/${item.id}`;
+                                            original_date = item.release_date;
+                                            searchTitle = item.title;
+                                        } else {
+                                            detailsURL = `/tv/${item.id}`;
+                                            original_date = item.first_air_date;
+                                            searchTitle = item.name;
+                                        }
+
+                                        let date = new Date(original_date);
+
+                                        let searchYear = date.getFullYear();
+                                        let searchImage = item.poster_path ?
+                                            `${imageBaseURL}/w500${item.poster_path}` :
+                                            'https://via.placeholder.com/300x400';
+                                        let searchRating = item.vote_average;
+
+                                        // Menampilkan genre di bawah tahun dan rating
+                                        let genreList = item.genre_ids.map(genreId => {
+                                            let genre = '';
+                                            if (item.media_type == 'movie') {
+                                                genre = movieGenres.find(genre => genre.id === genreId)?.name;
+                                            } else {
+                                                genre = tvGenres.find(genre => genre.id === genreId)?.name;
+                                            }
+                                            return genre;
+                                        });
+
+                                        let genreHTML = `<span class="font-sans text-sm mt-1">${genreList.join(', ')}</span>`;
+
+                                        htmlData.push(`
                                     <a href='${detailsURL}' class='group'>
                                         <div class='min-w-[232px] min-h-[428px] bg-white drop-shadow-[0_0px_8px_rgba(0,0,0,0.25)] group-hover:drop-shadow-[0_0px_8px_rgba(0,0,0,0.5)] rounded-[32px] p-5 flex flex-col duration-100'>
                                             <div class='overflow-hidden rounded-[32px]'>
                                                 <img class='w-full h-[300px] rounded-[32px] group-hover:scale-125 duration-200' src='${searchImage}'/>
                                             </div>
                                             <span class='font-inter font-bold text-xl mt-4 line-clamp-1 group-hover:line-clamp-none'>${searchTitle}</span>
-                                            <span class='font-inter text-sm mt-1'>${searchYear}</span>
-                                            <div class='flex flex-row mt-1 items-center'>
-                                                <svg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'>
-                                                    <path d='M18 21H8V8L15 1L16.25 2.25C16.3667 2.36667 16.4627 2.525 16.538 2.725C16.6127 2.925 16.65 3.11667 16.65 3.3V3.65L15.55 8H21C21.5333 8 22 8.2 22.4 8.6C22.8 9 23 9.46667 23 10V12C23 12.1167 22.9873 12.2417 22.962 12.375C22.9373 12.5083 22.9 12.6333 22.85 12.75L19.85 19.8C19.7 20.1333 19.45 20.4167 19.1 20.65C18.75 20.8833 18.3833 21 18 21ZM6 8V21H2V8H6Z' fill='#38B6FF'/>
-                                                </svg>
-                                                <span class='font-inter text-sm ml-1'>${searchRating}%</span>
+                                            <div class="flex justify-between mt-2">
+                                                <div class="flex flex-row items-center">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="yellow" class="bi bi-star-fill" viewBox="0 0 16 16">
+                                                        <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z" />
+                                                    </svg>
+                                                    <span class="font-sans ml-2">${searchRating}</span>
+                                                </div>
+                                                <span>|</span>
+                                                <span class="font-sans">${searchYear}</span>
                                             </div>
+                                            <span clas="font-sans text-sm mt-1">${genreHTML}</span>
                                         </div>
                                     </a>
                                 `);
-                                }
-                            });
+                                    }
+                                });
 
-                            // Show HTML
-                            $('#dataWrapper').append(htmlData.join(''));
-                        }
-                    })
-                    .fail(function(jqXHR, ajaxOptions, thrownError) {
-                        // Hide loader
-                        $('#autoLoad').hide();
+                                // Show HTML
+                                $('#dataWrapper').append(htmlData.join(''));
 
-                        // Show notification
-                        $('#notificationMessage').text('Terjadi kendala, coba beberapa saat lagi');
-                        $('#notification').show();
+                                // Add click event handler to the detail links
+                                $('.group').click(function(event) {
+                                    // Prevent default link behavior
+                                    event.preventDefault();
+                                    // Navigate to the details URL
+                                    window.location.href = $(this).attr('href');
+                                });
+                            }
+                        })
+                        .fail(function(jqXHR, ajaxOptions, thrownError) {
+                            // Hide loader
+                            $('#autoLoad').hide();
 
-                        // Set notification timeout. 3 seconds
-                        setTimeout(function() {
-                            $('#notification').hide();
-                        }, 3000);
-                    });
+                            // Show notification with proper message
+                            $('#notificationMessage').text('Terjadi kendala, coba beberapa saat lagi');
+                            $('#notification').show();
+
+                            // Set notification timeout. 3 seconds
+                            setTimeout(function() {
+                                $('#notification').hide();
+                            }, 3000);
+                        });
+                }
             }
-        }
+        });
     </script>
 </body>
 
