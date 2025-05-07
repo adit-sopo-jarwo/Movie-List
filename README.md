@@ -10,7 +10,7 @@
  ## Installation
 <div>
     <ul>
-        <li>Clone the repository: git clone</li>
+        <li>Clone the repository: git clone https://github.com/adit-sopo-jarwo/Movie-List.git</li>
         <li>Navigate to the project directory: Movie-List</li>
         <li>composer install</li>
         <li>cp .env.example .env</li>
