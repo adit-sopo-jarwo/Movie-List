@@ -10,6 +10,8 @@
  ## Installation
 <div>
     <ul>
+        <li>Clone the repository: git clone</li>
+        <li>Navigate to the project directory: Movie-List</li>
         <li>composer install</li>
         <li>cp .env.example .env</li>
         <li>php artisan key:generate</li>
